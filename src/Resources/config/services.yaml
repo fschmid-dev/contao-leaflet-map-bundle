@@ -1,0 +1,7 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  FSchmidDev\LeafletMapBundle\FrontendModule\LeafletMapModule:
+    class: FSchmidDev\LeafletMapBundle\FrontendModule\LeafletMapModule

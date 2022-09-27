@@ -1,0 +1,7 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  FSchmidDev\LeafletMapBundle\EventListener\Widget\LocationListener:
+    class: FSchmidDev\LeafletMapBundle\EventListener\Widget\LocationListener

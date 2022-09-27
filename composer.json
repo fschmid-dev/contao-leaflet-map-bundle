@@ -1,0 +1,46 @@
+{
+  "name": "fschmid-dev/contao-leaflet-map-bundle",
+  "type": "contao-bundle",
+  "description": "Contao Bundle to include a new frontend module for leaflet map integration",
+  "license": "LGPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Florian Schmid",
+      "email": "info@fschmid.dev",
+      "homepage": "https://fschmid.dev"
+    }
+  ],
+  "require": {
+    "php": ">= 7.4 || ^8",
+    "contao/conflicts": "@dev",
+    "contao/core-bundle": "^4.13"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  },
+  "prefer-stable": true,
+  "config": {
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "contao-components/installer": true
+    }
+  },
+  "extra": {
+    "contao-manager-plugin": "FSchmidDev\\LeafletMapBundle\\ContaoManager\\Plugin"
+  },
+  "autoload": {
+    "psr-4": {
+      "FSchmidDev\\LeafletMapBundle\\": "src/"
+    },
+    "classmap": [
+      "src/Resources/contao"
+    ],
+    "exclude-from-classmap": [
+      "src/Resources/contao/config/",
+      "src/Resources/contao/dca/",
+      "src/Resources/contao/languages/",
+      "src/Resources/contao/templates/"
+    ]
+  }
+}
