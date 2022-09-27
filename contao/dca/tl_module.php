@@ -15,6 +15,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['location'] = [
     'sql' => [
         'type' => 'string',
         'default' => NULL,
-        'notnull' => true,
+        'notnull' => false,
     ]
 ];

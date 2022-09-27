@@ -11,7 +11,7 @@ class LocationListener
     public function saveLocation($value, DataContainer $dataContainer) {
         $a = 0;
 
-        return 'asdf';
+        return $value;
     }
 
     #[AsCallback(table: 'tl_module', target: 'fields.location.load')]

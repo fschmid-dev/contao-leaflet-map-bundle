@@ -1,12 +1,14 @@
 <?php
 
-namespace FSchmidDev\LeafletMapBundle\Resources\contao\widgets;
+namespace FSchmidDev\LeafletMapBundle\Widget;
 
 use Contao\Widget;
 
 class Location extends Widget
 {
     protected $strTemplate = 'be_widget';
+
+    protected $blnSubmitInput = true;
 
     public function validate(): void
     {

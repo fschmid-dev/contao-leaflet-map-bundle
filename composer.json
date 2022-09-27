@@ -23,7 +23,8 @@
     "preferred-install": "dist",
     "sort-packages": true,
     "allow-plugins": {
-      "contao-components/installer": true
+      "contao-components/installer": true,
+      "contao/manager-plugin": true
     }
   },
   "extra": {
@@ -32,15 +33,6 @@
   "autoload": {
     "psr-4": {
       "FSchmidDev\\LeafletMapBundle\\": "src/"
-    },
-    "classmap": [
-      "src/Resources/contao"
-    ],
-    "exclude-from-classmap": [
-      "src/Resources/contao/config/",
-      "src/Resources/contao/dca/",
-      "src/Resources/contao/languages/",
-      "src/Resources/contao/templates/"
-    ]
+    }
   }
 }

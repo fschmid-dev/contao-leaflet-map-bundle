@@ -13,7 +13,8 @@ class Plugin implements BundlePluginInterface
     public function getBundles(ParserInterface $parser): array
     {
         return [
-            BundleConfig::create(FSchmidDevLeafletMapBundle::class)->setLoadAfter([ContaoCoreBundle::class])
+            BundleConfig::create(FSchmidDevLeafletMapBundle::class)
+                ->setLoadAfter([ContaoCoreBundle::class])
         ];
     }
 }
