@@ -6,46 +6,63 @@ use Contao\Widget;
 
 class Location extends Widget
 {
+    public const DEFAULT_DATA = [
+        'location' => '',
+        'location_latitude' => '',
+        'location_longitude' => '',
+    ];
+
     protected $strTemplate = 'be_widget';
 
     protected $blnSubmitInput = true;
 
     public function validate(): void
     {
-        $varValue = $this->getPost($this->strName);
+        $data = self::DEFAULT_DATA;
+        $data['location'] = $this->getPost($this->strName);
+        $data['location_latitude'] = $this->getPost(
+            str_replace('location', 'location_latitude', $this->strName),
+        );
+        $data['location_longitude'] = $this->getPost(
+            str_replace('location', 'location_longitude', $this->strName),
+        );
 
-        parent::validate();
+        $this->varValue = json_encode($data, JSON_THROW_ON_ERROR);
     }
 
     public function generate(): string
     {
-        $a = 0;
-
-        // <input type="text" name="location" id="ctrl_location" class="tl_text" value="asdf" onfocus="Backend.getScrollOffset()">
-        // <input type="text" name="location" id="ctrl_location" class="tl_text_3" value="asdf" onfocus="Backend.getScrollOffset()">
+        $value = $this->varValue;
+        if (is_string($value)) {
+            $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+        }
+        $data = self::DEFAULT_DATA;
+        if ($value) {
+            $data = array_merge($data, $value);
+        }
 
         // Location - Address
         $arrFields[] = sprintf(
             '<input type="text" name="%s" id="ctrl_%s" class="tl_text" value="%s" onfocus="Backend.getScrollOffset()">',
             $this->strName,
             $this->strId,
-            $this->varValue
+            $data['location'],
         );
 
         // Location - Latitude
         $arrFields[] = sprintf(
             '<input type="text" name="%s" id="ctrl_%s" class="tl_text_3" value="%s" onfocus="Backend.getScrollOffset()">',
-            $this->strName . '_lat',
-            $this->strId . '_lat',
-            $this->varValue
+            str_replace('location', 'location_latitude', $this->strName),
+            $this->strId . '_latitude',
+            $data['location_latitude'],
         );
 
         // Location - Longitude
         $arrFields[] = sprintf(
             '<input type="text" name="%s" id="ctrl_%s" class="tl_text_3" value="%s" onfocus="Backend.getScrollOffset()">',
-            $this->strName . '_long',
-            $this->strId . '_long',
-            $this->varValue
+            str_replace('location', 'location_longitude', $this->strName),
+            $this->strId . '_longitude',
+            $data['location_longitude'],
         );
 
         return sprintf(
