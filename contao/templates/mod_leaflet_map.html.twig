@@ -1,1 +1,22 @@
-<div id="leaflet_map_{{ id }}" style="min-height: 100px;"></div>
+<div id="leaflet_map_{{ id }}" class="leaflet-map">
+    {% if acceptLoad is defined %}
+        <div class="leaflet-map__data-privacy">
+            {% if dataPrivacyInfo is defined %}
+                <div class="leaflet-map__data-privacy-info">
+                    {{ dataPrivacyInfo|raw }}
+                </div>
+            {% endif %}
+
+            {% if dataPrivacyPage is defined and dataPrivacyPage is not null %}
+                <a href="{{ dataPrivacyPage.getFrontendUrl() }}"
+                   title="{{ dataPrivacyPage.title }}" class="leaflet-map__data-privacy-link"
+                >
+                    {{ dataPrivacyPage.title }}
+                </a>
+            {% endif %}
+            <button class="leaflet-map__data-privacy-accept">
+                akzeptieren
+            </button>
+        </div>
+    {% endif %}
+</div>
