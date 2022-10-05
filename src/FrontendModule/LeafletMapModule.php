@@ -1,5 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Contao Leaflet Map Bundle
+ * @copyright  Copyright (c) 2022, fschmid-dev
+ * @author     fschmid <https://fschmid.dev>
+ * @link       https://github.com/fschmid-dev/contao-leaflet-map-bundle
+ */
+
 namespace FSchmidDev\LeafletMapBundle\FrontendModule;
 
 use Contao\CoreBundle\Controller\FrontendModule\AbstractFrontendModuleController;
@@ -8,14 +17,21 @@ use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\Template;
+use FSchmidDev\LeafletMapBundle\Event\PrepareMarkerEvent;
+use FSchmidDev\LeafletMapBundle\Model\Marker;
 use JsonException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-#[AsFrontendModule(LeafletMapModule::TYPE, category: "miscellaneous")]
+#[AsFrontendModule(LeafletMapModule::TYPE, category: 'miscellaneous')]
 class LeafletMapModule extends AbstractFrontendModuleController
 {
     public const TYPE = 'leaflet_map';
+
+    public function __construct(private EventDispatcherInterface $dispatcher)
+    {
+    }
 
     /**
      * @throws JsonException
@@ -50,28 +66,45 @@ class LeafletMapModule extends AbstractFrontendModuleController
 
     private function createScript(ModuleModel $model): string
     {
-        $data = json_decode($model->location, true, 512, JSON_THROW_ON_ERROR);
+        $data = json_decode($model->location, true, 512, \JSON_THROW_ON_ERROR);
         ['location' => $location, 'location_latitude' => $locationLatitude, 'location_longitude' => $locationLongitude] = $data;
 
+        $markersArray = StringUtil::deserialize($model->markers);
+        $markers = [];
+
+        foreach ($markersArray as $index => $marker) {
+            $markers[] = new Marker(
+                $marker['location'],
+                $marker['location_latitude'],
+                $marker['location_longitude'],
+                $marker['popup']
+            );
+        }
+
+        $prepareMarkerEvent = new PrepareMarkerEvent($markers);
+
+        $this->dispatcher->dispatch($prepareMarkerEvent, PrepareMarkerEvent::NAME);
+
+        $markers = $prepareMarkerEvent->getMarkers();
+
         $markersCode = '';
-        $markers = StringUtil::deserialize($model->markers);
         foreach ($markers as $index => $marker) {
+            /* @var Marker $marker */
             $markersCode .= sprintf(
                 'var marker_%s = L.marker([%s, %s]).addTo(map);',
                 $index,
-                $marker['location_latitude'] ?: $locationLatitude,
-                $marker['location_longitude'] ?: $locationLongitude
+                $marker->getLatitude() ?: $locationLatitude,
+                $marker->getLongitude() ?: $locationLongitude
             );
 
-            if (isset($marker['popup']) && $marker['popup'] !== '') {
+            if ($marker->getPopup()) {
                 $markersCode .= sprintf(
                     "marker_%s.bindPopup('%s');",
                     $index,
-                    $marker['popup']
+                    $marker->getPopup()
                 );
             }
         }
-
 
         $jsScript = <<<JS
 var map = L.map('leaflet_map_$model->id').setView([$locationLatitude, $locationLongitude], 13);
@@ -85,13 +118,12 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 JS;
 
         if ($model->acceptLoad) {
-
             $jsScript = <<<JS
 var sessionStorageKey = 'leafletMapBundle-acceptLoad';
 
-document.addEventListener('click', function (event){    
+document.addEventListener('click', function (event){
    var target = event.target;
-   
+
    if (target.classList.contains('leaflet-map__data-privacy-accept')) {
        acceptMap();
    }
@@ -99,7 +131,7 @@ document.addEventListener('click', function (event){
 
 function acceptMap() {
     sessionStorage.setItem(sessionStorageKey, true);
-    
+
     initMap();
 }
 

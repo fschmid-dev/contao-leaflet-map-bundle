@@ -1,5 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Contao Leaflet Map Bundle
+ * @copyright  Copyright (c) 2022, fschmid-dev
+ * @author     fschmid <https://fschmid.dev>
+ * @link       https://github.com/fschmid-dev/contao-leaflet-map-bundle
+ */
+
 namespace FSchmidDev\LeafletMapBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;

@@ -1,5 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the Contao Leaflet Map Bundle
+ * @copyright  Copyright (c) 2022, fschmid-dev
+ * @author     fschmid <https://fschmid.dev>
+ * @link       https://github.com/fschmid-dev/contao-leaflet-map-bundle
+ */
+
 namespace FSchmidDev\LeafletMapBundle\Widget;
 
 use Contao\Widget;
@@ -27,14 +36,14 @@ class Location extends Widget
             str_replace('location', 'location_longitude', $this->strName),
         );
 
-        $this->varValue = json_encode($data, JSON_THROW_ON_ERROR);
+        $this->varValue = json_encode($data, \JSON_THROW_ON_ERROR);
     }
 
     public function generate(): string
     {
         $value = $this->varValue;
-        if (is_string($value)) {
-            $value = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+        if (\is_string($value)) {
+            $value = json_decode($value, true, 512, \JSON_THROW_ON_ERROR);
         }
         $data = self::DEFAULT_DATA;
         if ($value) {
@@ -68,7 +77,7 @@ class Location extends Widget
         return sprintf(
             '<div id="ctrl_%s" class="tl_locations%s">%s</div>',
             $this->strId,
-            ($this->strClass ? ' ' . $this->strClass : ''),
+            $this->strClass ? ' ' . $this->strClass : '',
             implode('', $arrFields)
         );
     }
