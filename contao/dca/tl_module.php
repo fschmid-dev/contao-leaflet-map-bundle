@@ -66,7 +66,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['dataPrivacyInfo'] = [
         'rte' => 'tinyMCE',
     ],
     'sql' => [
-        'type' => 'string',
+        'type' => 'text',
         'default' => null,
         'notnull' => false,
     ],

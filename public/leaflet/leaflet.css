@@ -779,9 +779,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --data-privacy-padding: 1rem;
     --data-privacy-background-color: darkgrey;
 
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
     padding: var(--data-privacy-padding);
     background-color: var(--data-privacy-background-color);
     height: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
 }
 
 .leaflet-popup-content {
