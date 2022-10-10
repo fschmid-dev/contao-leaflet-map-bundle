@@ -47,7 +47,9 @@ class LocationListener
     #[AsCallback(table: 'tl_module', target: 'fields.location.load')]
     public function loadLocation($value, DataContainer $dataContainer)
     {
-        return json_decode($value, true, 512, \JSON_THROW_ON_ERROR);
+        if ($value !== null) {
+            return json_decode($value, true, 512, \JSON_THROW_ON_ERROR);
+        }
     }
 
     private function getLatLongCoordinates(array &$data): void
