@@ -60,7 +60,7 @@ class Location extends Widget
 
         // Location - Latitude
         $arrFields[] = sprintf(
-            '<input type="text" name="%s" id="ctrl_%s" class="tl_text_3" value="%s" onfocus="Backend.getScrollOffset()">',
+            '<input type="text" name="%s" id="ctrl_%s" class="tl_text_2" value="%s" onfocus="Backend.getScrollOffset()">',
             str_replace('location', 'location_latitude', $this->strName),
             $this->strId . '_latitude',
             $data['location_latitude'],
@@ -68,14 +68,14 @@ class Location extends Widget
 
         // Location - Longitude
         $arrFields[] = sprintf(
-            '<input type="text" name="%s" id="ctrl_%s" class="tl_text_3" value="%s" onfocus="Backend.getScrollOffset()">',
+            '<input type="text" name="%s" id="ctrl_%s" class="tl_text_2" value="%s" onfocus="Backend.getScrollOffset()">',
             str_replace('location', 'location_longitude', $this->strName),
             $this->strId . '_longitude',
             $data['location_longitude'],
         );
 
         return sprintf(
-            '<div id="ctrl_%s" class="tl_locations%s">%s</div>',
+            '<div id="ctrl_%s" class="tl_locations tl_text_field%s">%s</div>',
             $this->strId,
             $this->strClass ? ' ' . $this->strClass : '',
             implode('', $arrFields)

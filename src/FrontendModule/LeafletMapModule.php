@@ -73,10 +73,15 @@ class LeafletMapModule extends AbstractFrontendModuleController
         $markers = [];
 
         foreach ($markersArray as $index => $marker) {
+            $markerLocation = json_decode($marker['location'], true, 512, \JSON_THROW_ON_ERROR);
+            if ($markerLocation['location'] === '') {
+                continue;
+            }
+
             $markers[] = new Marker(
-                $marker['location'],
-                $marker['location_latitude'],
-                $marker['location_longitude'],
+                $markerLocation['location'],
+                $markerLocation['location_latitude'],
+                $markerLocation['location_longitude'],
                 $marker['popup']
             );
         }

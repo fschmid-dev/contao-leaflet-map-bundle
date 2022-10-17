@@ -802,3 +802,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-popup-content p:last-child {
     margin-bottom: 0;
 }
+.leaflet-container .leaflet-map__data-privacy {
+    display: none;
+}

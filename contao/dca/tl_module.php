@@ -22,7 +22,16 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['location'] = [
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['markers'] = [
     'exclude' => true,
-    'inputType' => 'multiColumnWizard',
+    'inputType' => 'group',
+    'palette' => ['location', 'popup'],
+    'fields' => [
+        '&location' => [],
+        'popup' => [
+            'inputType' => 'textarea',
+            'eval' => ['rte' => 'tinyMCE'],
+        ]
+    ],
+    /*
     'eval' => [
         'columnFields' => [
             'location' => [
@@ -42,8 +51,10 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['markers'] = [
             ],
         ],
     ],
+    */
     'sql' => [
         'type' => 'blob',
+        'length' => \Doctrine\DBAL\Platforms\MySQLPlatform::LENGTH_LIMIT_BLOB,
         'default' => null,
         'notnull' => false,
     ],
