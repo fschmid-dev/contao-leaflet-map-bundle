@@ -4,15 +4,45 @@ use FSchmidDev\LeafletMapBundle\FrontendModule\LeafletMapModule;
 
 $GLOBALS['TL_DCA']['tl_module']['palettes'][LeafletMapModule::TYPE] =
     '{title_legend},name,type;'
-    . '{config_legend},location,markers;'
+    . '{config_legend},zoomLevel,autoZoom,location,markers;'
     . '{gdpr_legend},acceptLoad,dataPrivacyInfo,dataPrivacyUrl;'
     . '{template_legend:hide},customTpl;'
     . '{protected_legend:hide},protected;'
     . '{expert_legend:hide},cssID';
 
+$GLOBALS['TL_DCA']['tl_module']['fields']['zoomLevel'] = [
+    'exclude' => true,
+    'inputType' => 'text',
+    'eval' => [
+        'rgxp'=>'digit',
+        'tl_class'=> 'w50 clr',
+    ],
+    'sql' => [
+        'type' => 'integer',
+        'default' => 13,
+        'notnull' => true,
+    ],
+];
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['autoZoom'] = [
+    'exclude' => true,
+    'inputType' => 'checkbox',
+    'eval' => [
+        'tl_class'=> 'w50 m12',
+    ],
+    'sql' => [
+        'type' => 'string',
+        'length' => '1',
+        'default' => '',
+    ],
+];
+
 $GLOBALS['TL_DCA']['tl_module']['fields']['location'] = [
     'exclude' => true,
     'inputType' => 'location',
+    'eval' => [
+        'tl_class' => 'clr',
+    ],
     'sql' => [
         'type' => 'string',
         'default' => NULL,

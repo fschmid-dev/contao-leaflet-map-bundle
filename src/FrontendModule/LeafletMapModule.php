@@ -66,6 +66,9 @@ class LeafletMapModule extends AbstractFrontendModuleController
 
     private function createScript(ModuleModel $model): string
     {
+        $zoomLevel = $model->zoomLevel !== null ? $model->zoomLevel : 13;
+        $autoAdjustZoom = $model->autoZoom;
+
         $data = json_decode($model->location, true, 512, \JSON_THROW_ON_ERROR);
         ['location' => $location, 'location_latitude' => $locationLatitude, 'location_longitude' => $locationLongitude] = $data;
 
@@ -93,6 +96,7 @@ class LeafletMapModule extends AbstractFrontendModuleController
         $markers = $prepareMarkerEvent->getMarkers();
 
         $markersCode = '';
+        $markersGroup = '';
         foreach ($markers as $index => $marker) {
             /* @var Marker $marker */
             $markersCode .= sprintf(
@@ -109,10 +113,23 @@ class LeafletMapModule extends AbstractFrontendModuleController
                     $marker->getPopup()
                 );
             }
+
+            if ($autoAdjustZoom) {
+                $markersGroup .= sprintf(
+                    "%s marker_%s",
+                    ($markersGroup !== '' ? ', ' : ''),
+                    $index
+                );
+            }
+        }
+
+        if ($markersGroup !== '') {
+            $markersGroup = 'var group = new L.featureGroup([' . $markersGroup . ']); map.fitBounds(group.getBounds(), { padding: [25, 25] } );';
         }
 
         $jsScript = <<<JS
-var map = L.map('leaflet_map_$model->id').setView([$locationLatitude, $locationLongitude], 13);
+var map = L.map('leaflet_map_$model->id').setView([$locationLatitude, $locationLongitude], $zoomLevel);
+
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -120,6 +137,8 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
             $markersCode
+            
+            $markersGroup
 JS;
 
         if ($model->acceptLoad) {
