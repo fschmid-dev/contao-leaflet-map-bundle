@@ -108,7 +108,7 @@ class LeafletMapModule extends AbstractFrontendModuleController
 
             if ($marker->getPopup()) {
                 $markersCode .= sprintf(
-                    "marker_%s.bindPopup('%s');",
+                    "marker_%s.bindPopup(`%s`);",
                     $index,
                     $marker->getPopup()
                 );
