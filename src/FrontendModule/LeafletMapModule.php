@@ -160,6 +160,10 @@ function acceptMap() {
 }
 
 function initMap() {
+    L.Map.addInitHook(function() {
+        this.getContainer()._leaflet_map = this;
+    });
+    
     $jsScript
 }
 
