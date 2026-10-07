@@ -17,6 +17,7 @@ use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\Template;
+use Contao\CoreBundle\Twig\FragmentTemplate;
 use FSchmidDev\LeafletMapBundle\Event\PrepareMarkerEvent;
 use FSchmidDev\LeafletMapBundle\Model\Marker;
 use JsonException;
@@ -36,7 +37,7 @@ class LeafletMapModule extends AbstractFrontendModuleController
     /**
      * @throws JsonException
      */
-    protected function getResponse(Template $template, ModuleModel $model, Request $request): ?Response
+    protected function getResponse(FragmentTemplate $template, ModuleModel $model, Request $request): Response
     {
         // GDPR - settings
         $acceptLoad = $model->acceptLoad;
@@ -51,17 +52,15 @@ class LeafletMapModule extends AbstractFrontendModuleController
             $adapter = $this->getContaoAdapter(PageModel::class);
             $dataPrivacyPage = $dataPrivacyUrl > 0 ? $adapter->findByPk($dataPrivacyUrl) : null;
 
-            $data = $template->getData();
-            $data['acceptLoad'] = $acceptLoad;
-            $data['dataPrivacyInfo'] = $dataPrivacyInfo;
-            $data['dataPrivacyPage'] = $dataPrivacyPage;
-            $template->setData($data);
+            $template->set('acceptLoad', $acceptLoad);
+            $template->set('dataPrivacyInfo', $dataPrivacyInfo);
+            $template->set('dataPrivacyPage', $dataPrivacyPage);
         }
 
         $jsScript = $this->createScript($model);
         $GLOBALS['TL_BODY'][] = Template::generateInlineScript($jsScript);
 
-        return new Response($template->parse());
+        return $template->getResponse();
     }
 
     private function createScript(ModuleModel $model): string

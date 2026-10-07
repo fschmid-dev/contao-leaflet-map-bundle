@@ -11,12 +11,11 @@
     }
   ],
   "require": {
-    "php": ">= 7.4 || ^8",
-    "ext-curl": "*",
-    "contao/conflicts": "@dev",
-    "contao/core-bundle": "^4.13",
-    "mvo/contao-group-widget": "^1.4",
-    "symfony/event-dispatcher": "^5.4"
+    "php": "^8.3",
+    "contao/core-bundle": "^5.7",
+    "mvo/contao-group-widget": "^1.7",
+    "symfony/event-dispatcher": "^7.4",
+    "symfony/http-client": "^7.4"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.11",

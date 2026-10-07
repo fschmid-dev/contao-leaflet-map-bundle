@@ -84,7 +84,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['markers'] = [
     */
     'sql' => [
         'type' => 'blob',
-        'length' => \Doctrine\DBAL\Platforms\MySQLPlatform::LENGTH_LIMIT_BLOB,
+        'length' => \Doctrine\DBAL\Platforms\AbstractMySQLPlatform::LENGTH_LIMIT_BLOB,
         'default' => null,
         'notnull' => false,
     ],

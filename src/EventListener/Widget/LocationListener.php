@@ -13,30 +13,33 @@ namespace FSchmidDev\LeafletMapBundle\EventListener\Widget;
 
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\DataContainer;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Psr\Log\LoggerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class LocationListener
 {
-    public function __construct(private RequestStack $requestStack)
-    {
+    private const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+
+    public function __construct(
+        private readonly HttpClientInterface $httpClient,
+        private readonly LoggerInterface $logger,
+    ) {
     }
 
     #[AsCallback(table: 'tl_module', target: 'fields.location.save')]
     public function saveLocation($value, DataContainer $dataContainer)
     {
         $data = json_decode($value, true, 512, \JSON_THROW_ON_ERROR);
-
-        ['location' => $location, 'location_latitude' => $locationLatitude, 'location_longitude' => $locationLongitude] = $data;
-        ['location' => $previousLocation, 'location_latitude' => $previousLocationLatitude, 'location_longitude' => $previousLocationLongitude] = $dataContainer->activeRecord->location;
+        $previous = $this->decode($dataContainer->getCurrentRecord()['location'] ?? null);
 
         if (
             (
-                $location !== $previousLocation &&
-                $locationLatitude === $previousLocationLatitude &&
-                $locationLongitude === $previousLocationLongitude
-            ) ||
-            '' === $locationLatitude ||
-            '' === $locationLongitude
+                $data['location'] !== $previous['location']
+                && $data['location_latitude'] === $previous['location_latitude']
+                && $data['location_longitude'] === $previous['location_longitude']
+            )
+            || '' === $data['location_latitude']
+            || '' === $data['location_longitude']
         ) {
             $this->getLatLongCoordinates($data);
         }
@@ -47,32 +50,48 @@ class LocationListener
     #[AsCallback(table: 'tl_module', target: 'fields.location.load')]
     public function loadLocation($value, DataContainer $dataContainer)
     {
-        if ($value !== null) {
+        if (null !== $value) {
             return json_decode($value, true, 512, \JSON_THROW_ON_ERROR);
         }
+
+        return $value;
+    }
+
+    /**
+     * @return array{location: string, location_latitude: string, location_longitude: string}
+     */
+    private function decode(?string $value): array
+    {
+        $data = $value ? json_decode($value, true) : null;
+
+        return array_merge(
+            ['location' => '', 'location_latitude' => '', 'location_longitude' => ''],
+            \is_array($data) ? $data : [],
+        );
     }
 
     private function getLatLongCoordinates(array &$data): void
     {
-        $url = sprintf(
-            'https://nominatim.openstreetmap.org/search?format=json&q=%s',
-            urlencode($data['location'])
-        );
-        $userAgent = $this->requestStack->getCurrentRequest()->server->get('HTTP_USER_AGENT') ?: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36';
-
-        $ch = curl_init();
-        curl_setopt($ch, \CURLOPT_URL, $url);
-        curl_setopt($ch, \CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, \CURLOPT_USERAGENT, $userAgent);
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        $json = json_decode($response, true, 512, \JSON_THROW_ON_ERROR);
-        if (empty($json)) {
+        if ('' === trim($data['location'])) {
             return;
         }
 
-        $data['location_latitude'] = $json[0]['lat'] ?? 'Konnte nicht ermittelt werden!';
-        $data['location_longitude'] = $json[0]['lon'] ?? 'Konnte nicht ermittelt werden!';
+        try {
+            // Nominatim's usage policy requires an identifying User-Agent
+            $json = $this->httpClient->request('GET', self::NOMINATIM_URL, [
+                'query' => ['format' => 'jsonv2', 'limit' => 1, 'q' => $data['location']],
+                'headers' => ['User-Agent' => 'fschmid-dev/contao-leaflet-map-bundle (+https://github.com/fschmid-dev/contao-leaflet-map-bundle)'],
+                'timeout' => 5,
+            ])->toArray();
+        } catch (\Throwable $e) {
+            $this->logger->warning('Leaflet map geocoding failed: '.$e->getMessage());
+
+            return;
+        }
+
+        if (isset($json[0]['lat'], $json[0]['lon'])) {
+            $data['location_latitude'] = (string) $json[0]['lat'];
+            $data['location_longitude'] = (string) $json[0]['lon'];
+        }
     }
 }
