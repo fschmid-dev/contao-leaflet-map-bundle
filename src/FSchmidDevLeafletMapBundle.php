@@ -17,10 +17,6 @@ class FSchmidDevLeafletMapBundle extends Bundle
 {
     public function getPath(): string
     {
-        if (null === $this->path) {
-            $this->path = \dirname(__DIR__);
-        }
-
-        return $this->path;
+        return \dirname(__DIR__);
     }
 }
