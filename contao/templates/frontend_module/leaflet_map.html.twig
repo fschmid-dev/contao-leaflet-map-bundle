@@ -1,7 +1,7 @@
 {% extends '@Contao/frontend_module/_base.html.twig' %}
 
 {% block content %}
-    <div id="leaflet_map_{{ data.id }}" class="leaflet-map">
+    <div id="leaflet_map_{{ data.id }}" class="leaflet-map" data-leaflet-map>
         {% if acceptLoad is defined %}
             <div class="leaflet-map__data-privacy">
                 {% if dataPrivacyInfo is defined %}
@@ -22,5 +22,6 @@
                 </button>
             </div>
         {% endif %}
+        <script type="application/json" class="leaflet-map__data">{{ map_data|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
     </div>
 {% endblock %}

@@ -57,122 +57,57 @@ class LeafletMapModule extends AbstractFrontendModuleController
             $template->set('dataPrivacyPage', $dataPrivacyPage);
         }
 
-        $jsScript = $this->createScript($model);
-        $GLOBALS['TL_BODY'][] = Template::generateInlineScript($jsScript);
+        $template->set('map_data', $this->createData($model));
+        $GLOBALS['TL_BODY'][] = Template::generateScriptTag('bundles/fschmiddevleafletmap/leaflet-map.js', false, null, null, null, null, true);
 
         return $template->getResponse();
     }
 
-    private function createScript(ModuleModel $model): string
+    /**
+     * Everything the browser needs to draw the map, as JSON for leaflet-map.js.
+     *
+     * @return array<string, mixed>
+     */
+    private function createData(ModuleModel $model): array
     {
-        $zoomLevel = $model->zoomLevel !== null ? $model->zoomLevel : 13;
-        $autoAdjustZoom = $model->autoZoom;
-
-        $data = json_decode($model->location, true, 512, \JSON_THROW_ON_ERROR);
-        ['location' => $location, 'location_latitude' => $locationLatitude, 'location_longitude' => $locationLongitude] = $data;
-
-        $markersArray = StringUtil::deserialize($model->markers);
+        $location = json_decode((string) $model->location, true) ?: [];
         $markers = [];
 
-        foreach ($markersArray as $index => $marker) {
-            $markerLocation = json_decode($marker['location'], true, 512, \JSON_THROW_ON_ERROR);
-            if ($markerLocation['location'] === '') {
+        foreach (StringUtil::deserialize($model->markers, true) as $marker) {
+            $markerLocation = json_decode((string) ($marker['location'] ?? ''), true) ?: [];
+            if (($markerLocation['location'] ?? '') === '') {
                 continue;
             }
 
             $markers[] = new Marker(
                 $markerLocation['location'],
-                $markerLocation['location_latitude'],
-                $markerLocation['location_longitude'],
-                $marker['popup']
+                (string) $markerLocation['location_latitude'],
+                (string) $markerLocation['location_longitude'],
+                $marker['popup'] ?? null
             );
         }
 
-        $prepareMarkerEvent = new PrepareMarkerEvent($markers);
+        $event = new PrepareMarkerEvent($markers);
+        $this->dispatcher->dispatch($event, PrepareMarkerEvent::NAME);
 
-        $this->dispatcher->dispatch($prepareMarkerEvent, PrepareMarkerEvent::NAME);
+        $center = [(float) ($location['location_latitude'] ?? 51.16), (float) ($location['location_longitude'] ?? 10.45)];
 
-        $markers = $prepareMarkerEvent->getMarkers();
-
-        $markersCode = '';
-        $markersGroup = '';
-        foreach ($markers as $index => $marker) {
-            /* @var Marker $marker */
-            $markersCode .= sprintf(
-                'var marker_%s = L.marker([%s, %s]).addTo(map);',
-                $index,
-                $marker->getLatitude() ?: $locationLatitude,
-                $marker->getLongitude() ?: $locationLongitude
-            );
-
-            if ($marker->getPopup()) {
-                $markersCode .= sprintf(
-                    "marker_%s.bindPopup(`%s`);",
-                    $index,
-                    $marker->getPopup()
-                );
-            }
-
-            if ($autoAdjustZoom) {
-                $markersGroup .= sprintf(
-                    "%s marker_%s",
-                    ($markersGroup !== '' ? ', ' : ''),
-                    $index
-                );
-            }
-        }
-
-        if ($markersGroup !== '') {
-            $markersGroup = 'var group = new L.featureGroup([' . $markersGroup . ']); map.fitBounds(group.getBounds(), { padding: [25, 25] } );';
-        }
-
-        $jsScript = <<<JS
-var map = L.map('leaflet_map_$model->id').setView([$locationLatitude, $locationLongitude], $zoomLevel);
-
-
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-}).addTo(map);
-
-            $markersCode
-            
-            $markersGroup
-JS;
-
-        if ($model->acceptLoad) {
-            $jsScript = <<<JS
-var sessionStorageKey = 'leafletMapBundle-acceptLoad';
-
-document.addEventListener('click', function (event){
-   var target = event.target;
-
-   if (target.classList.contains('leaflet-map__data-privacy-accept')) {
-       acceptMap();
-   }
-});
-
-function acceptMap() {
-    sessionStorage.setItem(sessionStorageKey, true);
-
-    initMap();
-}
-
-function initMap() {
-    L.Map.addInitHook(function() {
-        this.getContainer()._leaflet_map = this;
-    });
-    
-    $jsScript
-}
-
-if (sessionStorage.getItem(sessionStorageKey)) {
-    initMap();
-}
-
-JS;
-        }
-
-        return $jsScript;
+        return [
+            'center' => $center,
+            'zoom' => (int) ($model->zoomLevel ?? 13),
+            'autoZoom' => (bool) $model->autoZoom,
+            'acceptLoad' => (bool) $model->acceptLoad,
+            'filters' => $event->getFilters(),
+            'filterAll' => $event->getFilterAllLabel(),
+            'markers' => array_values(array_map(
+                static fn (Marker $marker): array => [
+                    'lat' => (float) ($marker->getLatitude() ?: $center[0]),
+                    'lng' => (float) ($marker->getLongitude() ?: $center[1]),
+                    'popup' => (string) $marker->getPopup(),
+                    'filter' => $marker->getFilterValues(),
+                ],
+                $event->getMarkers(),
+            )),
+        ];
     }
 }

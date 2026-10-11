@@ -13,12 +13,35 @@ namespace FSchmidDev\LeafletMapBundle\Model;
 
 class Marker
 {
+    /**
+     * @param list<string> $filterValues values of the map filter this marker belongs to;
+     *                                   a marker without values is shown for every filter
+     */
     public function __construct(
         private string $address,
         private string $latitude,
         private string $longitude,
-        private ?string $popup
+        private ?string $popup,
+        private array $filterValues = [],
     ) {
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getFilterValues(): array
+    {
+        return $this->filterValues;
+    }
+
+    /**
+     * @param list<string> $filterValues
+     */
+    public function setFilterValues(array $filterValues): self
+    {
+        $this->filterValues = $filterValues;
+
+        return $this;
     }
 
     public function getAddress(): string
